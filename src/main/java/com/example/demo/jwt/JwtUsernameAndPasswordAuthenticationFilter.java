@@ -55,7 +55,9 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
             //it will ensure whether username exists
             // if it will check password is correct or not
             // kind of validate credentials
+            //authenticated will become true if you see in the breakpoint
             Authentication authenticate = authenticationManager.authenticate(authentication);
+            //create breakpoint here to check if user can authenticate
             return authenticate;
 
         }catch (IOException e){
@@ -86,6 +88,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 
 
         //send it to client
+        //create breakpoint here to check if token is created or not
         response.addHeader(  "Authorization", "Bearer " + token );
 
 
