@@ -1,6 +1,8 @@
 package com.example.demo.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -8,9 +10,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.Date;
 
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     /*
@@ -56,5 +63,32 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
         }
 
         //return super.attemptAuthentication(request, response);
+    }
+
+
+    /*create a JWT token and send it to Client*/
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authResult) throws IOException, ServletException {
+
+
+        //create token from io.jsonwebtoken
+        String tempKey = "securesecuresecuresecuresecuresecuresecure";
+        String token = Jwts.builder()
+                .setSubject(authResult.getName()) //actual subject linda/tom/anna
+                .claim("authorities", authResult.getAuthorities()) //body
+                .setIssuedAt(new Date())                              //when started token?
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //until when
+                .signWith(Keys.hmacShaKeyFor(tempKey.getBytes()))
+                .compact();
+
+
+        //send it to client
+        response.addHeader(  "Authorization", "Bearer " + token );
+
+
+
     }
 }
