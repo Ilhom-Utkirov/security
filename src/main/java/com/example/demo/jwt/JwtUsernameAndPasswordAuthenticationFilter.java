@@ -2,7 +2,6 @@ package com.example.demo.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,12 +9,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -28,10 +27,17 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 
     /*Authenticate to see wether username and password is correct*/
     private final AuthenticationManager authenticationManager;
+    private final JwtConfig jwtConfig;
+    private final SecretKey secretKey;
 
     @Autowired // we should know how to exactly pass this authenticationManager not the other one
-    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                      JwtConfig jwtConfig,
+                                                      SecretKey secretKey) {
+
         this.authenticationManager = authenticationManager;
+        this.jwtConfig = jwtConfig;
+        this.secretKey = secretKey;
     }
 
 
@@ -77,19 +83,21 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 
 
         //create token from io.jsonwebtoken
-        String tempKey = "securesecuresecuresecuresecuresecuresecure";
+        // String tempKey = "securesecuresecuresecuresecuresecuresecure";
+
         String token = Jwts.builder()
                 .setSubject(authResult.getName()) //actual subject linda/tom/anna
                 .claim("authorities", authResult.getAuthorities()) //body
                 .setIssuedAt(new Date())                              //when started token?
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //until when
-                .signWith(Keys.hmacShaKeyFor(tempKey.getBytes()))
+                //.signWith(Keys.hmacShaKeyFor(tempKey.getBytes()))
+                .signWith(secretKey)
                 .compact();
 
 
         //send it to client
         //create breakpoint here to check if token is created or not
-        response.addHeader(  "Authorization", "Bearer " + token );
+        response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token );
 
 
 
