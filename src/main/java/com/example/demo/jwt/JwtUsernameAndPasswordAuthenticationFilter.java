@@ -89,7 +89,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                 .setSubject(authResult.getName()) //actual subject linda/tom/anna
                 .claim("authorities", authResult.getAuthorities()) //body
                 .setIssuedAt(new Date())                              //when started token?
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //until when
+                //.setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) //until when
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays()))) //until when
                 //.signWith(Keys.hmacShaKeyFor(tempKey.getBytes()))
                 .signWith(secretKey)
                 .compact();
